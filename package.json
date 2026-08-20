@@ -1,0 +1,23 @@
+{
+  "name": "com.kingfisher.kscene",
+  "version": "0.1.0",
+  "displayName": "K-Scene",
+  "description": "Scene View camera bookmarks for the Unity editor - save the current Scene View camera as a named bookmark and jump straight back to it later. Pairs with K-Setting, the shared settings backend. Editor-only: nothing is compiled into player builds.",
+  "unity": "2022.3",
+  "author": {
+    "name": "Kingfisher",
+    "url": "https://github.com/vuthelong"
+  },
+  "keywords": [
+    "editor",
+    "scene view",
+    "camera",
+    "bookmarks",
+    "workflow",
+    "productivity"
+  ],
+  "documentationUrl": "https://github.com/vuthelong/KScene/blob/main/README.md",
+  "changelogUrl": "https://github.com/vuthelong/KScene/blob/main/CHANGELOG.md",
+  "licensesUrl": "https://github.com/vuthelong/KScene/blob/main/LICENSE.md",
+  "hideInEditor": false
+}
