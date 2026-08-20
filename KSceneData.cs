@@ -13,6 +13,8 @@ namespace Kingfisher.KScene
 
         public int bookmarkCounter;
 
+        public Bookmark home;
+
         #endregion
 
         #region Nested Type
@@ -26,6 +28,14 @@ namespace Kingfisher.KScene
             public Quaternion rotation = Quaternion.identity;
             public float size = 10f;
             public bool orthographic;
+
+            public byte[] thumbnailPng;
+        }
+
+        [Serializable]
+        public class BookmarkList
+        {
+            public List<Bookmark> bookmarks = new();
         }
 
         #endregion

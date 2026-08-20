@@ -1,5 +1,6 @@
 #if UNITY_EDITOR
 using System;
+using System.IO;
 using UnityEditor;
 using UnityEngine;
 using Object = UnityEngine.Object;
@@ -17,6 +18,10 @@ namespace Kingfisher.KScene
         private const string DebugTimeFormat = "HH:mm:ss.fff";
 
         private const string DefaultBookmarkNamePrefix = "Bookmark ";
+        private const string HomeBookmarkName = "Home";
+
+        private const int ThumbnailWidth = 96;
+        private const int ThumbnailHeight = 54;
 
         public static KSceneData Data;
 
@@ -69,6 +74,7 @@ namespace Kingfisher.KScene
                 rotation = sceneView.rotation,
                 size = sceneView.size,
                 orthographic = sceneView.orthographic,
+                thumbnailPng = CaptureThumbnail(sceneView),
             };
 
             Data.bookmarks.Add(bookmark);
@@ -84,9 +90,62 @@ namespace Kingfisher.KScene
         {
             if (bookmark == null || !sceneView) return;
 
-            sceneView.LookAt(bookmark.pivot, bookmark.rotation, bookmark.size, bookmark.orthographic, true);
+            sceneView.LookAt(bookmark.pivot, bookmark.rotation, bookmark.size, bookmark.orthographic, !KSceneMenu.SmoothTransitionsEnabled);
 
             LogDebug(nameof(JumpTo), bookmark.name);
+        }
+
+        public static void SetHome(SceneView sceneView)
+        {
+            EnsureData();
+
+            if (!sceneView) return;
+
+            Undo.RecordObject(Data, "Set Home Bookmark");
+
+            Data.home = new KSceneData.Bookmark
+            {
+                name = HomeBookmarkName,
+                pivot = sceneView.pivot,
+                rotation = sceneView.rotation,
+                size = sceneView.size,
+                orthographic = sceneView.orthographic,
+                thumbnailPng = CaptureThumbnail(sceneView),
+            };
+
+            Data.Dirty();
+
+            LogDebug(nameof(SetHome), HomeBookmarkName);
+        }
+
+        public static void GoHome(SceneView sceneView) => JumpTo(sceneView, Data ? Data.home : null);
+
+        public static void ExportBookmarks(string filePath)
+        {
+            EnsureData();
+
+            var list = new KSceneData.BookmarkList { bookmarks = Data.bookmarks };
+
+            File.WriteAllText(filePath, JsonUtility.ToJson(list, true));
+
+            LogDebug(nameof(ExportBookmarks), filePath);
+        }
+
+        public static void ImportBookmarks(string filePath)
+        {
+            EnsureData();
+
+            var list = JsonUtility.FromJson<KSceneData.BookmarkList>(File.ReadAllText(filePath));
+
+            if (list?.bookmarks == null) return;
+
+            Undo.RecordObject(Data, "Import Bookmarks");
+
+            Data.bookmarks.AddRange(list.bookmarks);
+
+            Data.Dirty();
+
+            LogDebug(nameof(ImportBookmarks), filePath);
         }
 
         public static void Rename(KSceneData.Bookmark bookmark, string newName)
@@ -131,6 +190,37 @@ namespace Kingfisher.KScene
             if (!KSceneMenu.DebugLoggingEnabled) return;
 
             Debug.Log($"{DebugLogPrefix} {methodName} '{bookmarkName}' @ {DateTime.UtcNow.ToString(DebugTimeFormat)}");
+        }
+
+        private static byte[] CaptureThumbnail(SceneView sceneView)
+        {
+            var camera = sceneView.camera;
+
+            if (!camera) return null;
+
+            var renderTexture = RenderTexture.GetTemporary(ThumbnailWidth, ThumbnailHeight, 24);
+            var previousTarget = camera.targetTexture;
+            var previousActive = RenderTexture.active;
+
+            camera.targetTexture = renderTexture;
+            camera.Render();
+            RenderTexture.active = renderTexture;
+
+            var texture = new Texture2D(ThumbnailWidth, ThumbnailHeight, TextureFormat.RGB24, false);
+
+            texture.ReadPixels(new Rect(0, 0, ThumbnailWidth, ThumbnailHeight), 0, 0);
+            texture.Apply();
+
+            camera.targetTexture = previousTarget;
+            RenderTexture.active = previousActive;
+
+            RenderTexture.ReleaseTemporary(renderTexture);
+
+            var png = texture.EncodeToPNG();
+
+            Object.DestroyImmediate(texture);
+
+            return png;
         }
 
         #endregion
