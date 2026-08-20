@@ -54,17 +54,17 @@ namespace Kingfisher.KScene
 
         #region Public Methods
 
-        public static KSceneData.Bookmark AddBookmark()
+        public static KSceneData.Bookmark AddBookmark(SceneView sceneView)
         {
             EnsureData();
 
-            var sceneView = SceneView.lastActiveSceneView;
-
             if (!sceneView) return null;
+
+            Undo.RecordObject(Data, "Add Bookmark");
 
             var bookmark = new KSceneData.Bookmark
             {
-                name = DefaultBookmarkNamePrefix + (Data.bookmarks.Count + 1),
+                name = DefaultBookmarkNamePrefix + ++Data.bookmarkCounter,
                 pivot = sceneView.pivot,
                 rotation = sceneView.rotation,
                 size = sceneView.size,
@@ -75,29 +75,25 @@ namespace Kingfisher.KScene
 
             Data.Dirty();
 
-            if (KSceneMenu.DebugLoggingEnabled)
-                Debug.Log($"{DebugLogPrefix} {nameof(AddBookmark)} '{bookmark.name}' @ {DateTime.UtcNow.ToString(DebugTimeFormat)}");
+            LogDebug(nameof(AddBookmark), bookmark.name);
 
             return bookmark;
         }
 
-        public static void JumpTo(KSceneData.Bookmark bookmark)
+        public static void JumpTo(SceneView sceneView, KSceneData.Bookmark bookmark)
         {
-            if (bookmark == null) return;
-
-            var sceneView = SceneView.lastActiveSceneView;
-
-            if (!sceneView) return;
+            if (bookmark == null || !sceneView) return;
 
             sceneView.LookAt(bookmark.pivot, bookmark.rotation, bookmark.size, bookmark.orthographic, true);
 
-            if (KSceneMenu.DebugLoggingEnabled)
-                Debug.Log($"{DebugLogPrefix} {nameof(JumpTo)} '{bookmark.name}' @ {DateTime.UtcNow.ToString(DebugTimeFormat)}");
+            LogDebug(nameof(JumpTo), bookmark.name);
         }
 
         public static void Rename(KSceneData.Bookmark bookmark, string newName)
         {
             if (bookmark == null || Data == null) return;
+
+            Undo.RecordObject(Data, "Rename Bookmark");
 
             bookmark.name = newName;
 
@@ -108,12 +104,13 @@ namespace Kingfisher.KScene
         {
             if (bookmark == null || Data == null) return;
 
+            Undo.RecordObject(Data, "Remove Bookmark");
+
             Data.bookmarks.Remove(bookmark);
 
             Data.Dirty();
 
-            if (KSceneMenu.DebugLoggingEnabled)
-                Debug.Log($"{DebugLogPrefix} {nameof(RemoveBookmark)} '{bookmark.name}' @ {DateTime.UtcNow.ToString(DebugTimeFormat)}");
+            LogDebug(nameof(RemoveBookmark), bookmark.name);
         }
 
         #endregion
@@ -127,6 +124,13 @@ namespace Kingfisher.KScene
             Data = Libs.KData.Load<KSceneData>(DataFileName) ?? Libs.KData.Create<KSceneData>(DataFileName);
 
             Libs.KData.Autosave(Data, DataFileName);
+        }
+
+        private static void LogDebug(string methodName, string bookmarkName)
+        {
+            if (!KSceneMenu.DebugLoggingEnabled) return;
+
+            Debug.Log($"{DebugLogPrefix} {methodName} '{bookmarkName}' @ {DateTime.UtcNow.ToString(DebugTimeFormat)}");
         }
 
         #endregion

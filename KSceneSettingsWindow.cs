@@ -70,7 +70,6 @@ namespace Kingfisher.KScene
         private const char PathSeparator = '/';
         private const char WindowsPathSeparator = '\\';
         private const string DataFolderName = ".KData";
-        private const string AssetsFolderMarker = "/Assets";
 
         private const string DeleteDataTitleFormat = "Delete {0} data?";
         private const string DeleteDataEmptyBodyFormat = "{0} has nothing saved in {1} right now.\n\nIts in-memory copy will still be cleared.";
@@ -386,7 +385,20 @@ namespace Kingfisher.KScene
 
                 if (option.Value) continue;
 
-                Apply(option, true);
+                SelectChoice(entry, option);
+            }
+        }
+
+        private static void SelectChoice(SettingsEntry entry, SettingsSetting selected)
+        {
+            for (var i = 0; i < entry.Settings.Count; i++)
+            {
+                var option = entry.Settings[i];
+                var shouldBeOn = option == selected;
+
+                if (option.Value == shouldBeOn) continue;
+
+                Apply(option, shouldBeOn);
             }
         }
 
@@ -630,8 +642,6 @@ namespace Kingfisher.KScene
         {
             if (_isModelBuilt) return;
 
-            _isModelBuilt = true;
-
             var menuType = typeof(KSceneMenu);
 
             _deleteDataMethod = menuType.GetMethod(DeleteDataMethodName, StaticMemberFlags, null, Type.EmptyTypes, null);
@@ -666,6 +676,8 @@ namespace Kingfisher.KScene
             }
 
             BuildSections(menuType, propertiesByName, declarationOrder);
+
+            _isModelBuilt = true;
         }
 
         private static void BuildSections(Type menuType, Dictionary<string, PropertyInfo> propertiesByName, List<string> declarationOrder)
@@ -797,6 +809,8 @@ namespace Kingfisher.KScene
 
             if (!propertiesByName.TryGetValue(propertyName, out var property)) return;
 
+            if (property.PropertyType != typeof(float)) return;
+
             if (!float.TryParse(parts[SliderMinIndex].Trim(), NumberStyles.Float, CultureInfo.InvariantCulture, out var min)) return;
 
             if (!float.TryParse(parts[SliderMaxIndex].Trim(), NumberStyles.Float, CultureInfo.InvariantCulture, out var max)) return;
@@ -843,13 +857,7 @@ namespace Kingfisher.KScene
             Sections.Add(section);
         }
 
-        private static string GetSharedDataFolderPath()
-        {
-            var assetsPath = Application.dataPath;
-            var rootLength = assetsPath.Length - AssetsFolderMarker.Length;
-
-            return assetsPath.Substring(0, rootLength) + PathSeparator + DataFolderName;
-        }
+        private static string GetSharedDataFolderPath() => Libs.KData.FolderPath;
 
         #endregion
 

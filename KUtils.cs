@@ -126,10 +126,10 @@ namespace Kingfisher.KScene.Libs
 
         public static MethodInfo GetMethodInfo(this Type type, string methodName, Type[] argumentTypes)
         {
-            var argumentsHash = 0;
+            var argumentsHash = 17;
 
             for (var i = 0; i < argumentTypes.Length; i++)
-                argumentsHash ^= argumentTypes[i].GetHashCode();
+                argumentsHash = argumentsHash * 31 + argumentTypes[i].GetHashCode();
 
             var key = (type, methodName, argumentsHash);
 

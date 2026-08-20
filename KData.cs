@@ -41,7 +41,18 @@ namespace Kingfisher.KScene.Libs
 
             if (!File.Exists(filePath)) return null;
 
-            var loaded = InternalEditorUtility.LoadSerializedFileAndForget(filePath);
+            UnityEngine.Object[] loaded;
+
+            try
+            {
+                loaded = InternalEditorUtility.LoadSerializedFileAndForget(filePath);
+            }
+            catch (System.Exception exception)
+            {
+                Debug.LogWarning($"KData: failed to load '{filePath}', starting fresh.\n{exception}");
+
+                return null;
+            }
 
             for (var i = 0; i < loaded.Length; i++)
             {
@@ -91,8 +102,6 @@ namespace Kingfisher.KScene.Libs
 
         public static void Delete(string fileName)
         {
-            // Drop the autosave entry first, or the next flush writes the file
-            // straight back out of the copy still held in memory.
             for (var i = Entries.Count - 1; i >= 0; i--)
             {
                 if (Entries[i].FileName != fileName) continue;

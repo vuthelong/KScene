@@ -35,12 +35,14 @@ namespace Kingfisher.KScene
                 return;
             }
 
+            var sceneView = containerWindow as SceneView;
+
             GUILayout.BeginVertical(GUILayout.MinWidth(MinListWidth));
 
-            DrawBookmarks();
+            DrawBookmarks(sceneView);
 
             if (GUILayout.Button(AddButtonLabel, GUILayout.Height(AddButtonHeight)))
-                KScene.AddBookmark();
+                KScene.AddBookmark(sceneView);
 
             GUILayout.EndVertical();
         }
@@ -49,7 +51,7 @@ namespace Kingfisher.KScene
 
         #region Private Methods
 
-        private static void DrawBookmarks()
+        private static void DrawBookmarks(SceneView sceneView)
         {
             var data = KScene.Data;
 
@@ -64,13 +66,13 @@ namespace Kingfisher.KScene
 
             for (var i = 0; i < data.bookmarks.Count; i++)
             {
-                if (DrawRow(data.bookmarks[i])) toRemove = data.bookmarks[i];
+                if (DrawRow(sceneView, data.bookmarks[i])) toRemove = data.bookmarks[i];
             }
 
             if (toRemove != null) KScene.RemoveBookmark(toRemove);
         }
 
-        private static bool DrawRow(KSceneData.Bookmark bookmark)
+        private static bool DrawRow(SceneView sceneView, KSceneData.Bookmark bookmark)
         {
             var isDeleted = false;
 
@@ -81,7 +83,7 @@ namespace Kingfisher.KScene
             if (newName != bookmark.name) KScene.Rename(bookmark, newName);
 
             if (GUILayout.Button(JumpButtonContent, GUILayout.Width(JumpButtonWidth)))
-                KScene.JumpTo(bookmark);
+                KScene.JumpTo(sceneView, bookmark);
 
             if (GUILayout.Button(DeleteButtonContent, GUILayout.Width(DeleteButtonWidth)))
                 isDeleted = true;

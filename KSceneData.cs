@@ -11,6 +11,8 @@ namespace Kingfisher.KScene
 
         public List<Bookmark> bookmarks = new();
 
+        public int bookmarkCounter;
+
         #endregion
 
         #region Nested Type
