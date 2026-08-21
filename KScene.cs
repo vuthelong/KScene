@@ -14,9 +14,6 @@ namespace Kingfisher.KScene
 
         public const string DataFileName = "KScene Data.asset";
 
-        private const string DebugLogPrefix = "[KSCN-DEBUG]";
-        private const string DebugTimeFormat = "HH:mm:ss.fff";
-
         private const string DefaultBookmarkNamePrefix = "Bookmark ";
         private const string HomeBookmarkName = "Home";
 
@@ -81,8 +78,6 @@ namespace Kingfisher.KScene
 
             Data.Dirty();
 
-            LogDebug(nameof(AddBookmark), bookmark.name);
-
             return bookmark;
         }
 
@@ -91,8 +86,6 @@ namespace Kingfisher.KScene
             if (bookmark == null || !sceneView) return;
 
             sceneView.LookAt(bookmark.pivot, bookmark.rotation, bookmark.size, bookmark.orthographic, !KSceneMenu.SmoothTransitionsEnabled);
-
-            LogDebug(nameof(JumpTo), bookmark.name);
         }
 
         public static void SetHome(SceneView sceneView)
@@ -114,8 +107,6 @@ namespace Kingfisher.KScene
             };
 
             Data.Dirty();
-
-            LogDebug(nameof(SetHome), HomeBookmarkName);
         }
 
         public static void GoHome(SceneView sceneView) => JumpTo(sceneView, Data ? Data.home : null);
@@ -127,8 +118,6 @@ namespace Kingfisher.KScene
             var list = new KSceneData.BookmarkList { bookmarks = Data.bookmarks };
 
             File.WriteAllText(filePath, JsonUtility.ToJson(list, true));
-
-            LogDebug(nameof(ExportBookmarks), filePath);
         }
 
         public static void ImportBookmarks(string filePath)
@@ -144,8 +133,6 @@ namespace Kingfisher.KScene
             Data.bookmarks.AddRange(list.bookmarks);
 
             Data.Dirty();
-
-            LogDebug(nameof(ImportBookmarks), filePath);
         }
 
         public static void Rename(KSceneData.Bookmark bookmark, string newName)
@@ -168,8 +155,6 @@ namespace Kingfisher.KScene
             Data.bookmarks.Remove(bookmark);
 
             Data.Dirty();
-
-            LogDebug(nameof(RemoveBookmark), bookmark.name);
         }
 
         #endregion
@@ -183,13 +168,6 @@ namespace Kingfisher.KScene
             Data = Libs.KData.Load<KSceneData>(DataFileName) ?? Libs.KData.Create<KSceneData>(DataFileName);
 
             Libs.KData.Autosave(Data, DataFileName);
-        }
-
-        private static void LogDebug(string methodName, string bookmarkName)
-        {
-            if (!KSceneMenu.DebugLoggingEnabled) return;
-
-            Debug.Log($"{DebugLogPrefix} {methodName} '{bookmarkName}' @ {DateTime.UtcNow.ToString(DebugTimeFormat)}");
         }
 
         private static byte[] CaptureThumbnail(SceneView sceneView)

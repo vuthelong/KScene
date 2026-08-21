@@ -11,7 +11,6 @@ namespace Kingfisher.KScene
         private const string KeyPrefix = "KScene-kingfisher-";
 
         private const string PluginDisabledKey = KeyPrefix + "pluginDisabled";
-        private const string DebugLoggingKey = KeyPrefix + "debugLoggingEnabled";
         private const string SmoothTransitionsEnabledKey = KeyPrefix + "smoothTransitionsEnabled";
 
         private const string ExportMenuPath = "Tools/Kingfisher/KScene/Export Bookmarks...";
@@ -26,15 +25,11 @@ namespace Kingfisher.KScene
         {
             "# Bookmarks",
             "SmoothTransitionsEnabled|Smooth camera transitions",
-            "# Debug",
-            "DebugLoggingEnabled|Enable debug logging",
         };
 
         #endregion
 
         #region Property
-
-        public static bool DebugLoggingEnabled { get => EditorPrefsCached.GetBool(DebugLoggingKey, false); set => EditorPrefsCached.SetBool(DebugLoggingKey, value); }
 
         public static bool SmoothTransitionsEnabled { get => EditorPrefsCached.GetBool(SmoothTransitionsEnabledKey, false); set => EditorPrefsCached.SetBool(SmoothTransitionsEnabledKey, value); }
 
